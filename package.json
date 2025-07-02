@@ -1,0 +1,41 @@
+{
+  "name": "playwright-failure-rate-monitor",
+  "version": "1.0.0",
+  "description": "A Playwright reporter that monitors test failure rates in real-time and terminates execution if the failure rate exceeds a configurable threshold.",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist/"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "clean": "rm -rf dist",
+    "prepublishOnly": "npm run clean && npm run build"
+  },
+  "keywords": [
+    "playwright",
+    "reporter",
+    "testing",
+    "failure-rate",
+    "monitoring",
+    "environment-resilience"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "peerDependencies": {
+    "@playwright/test": "^1.40.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.40.0",
+    "typescript": "^5.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/qa-gary-parker/playwright-failure-rate-monitor.git"
+  },
+  "bugs": {
+    "url": "https://github.com/qa-gary-parker/playwright-failure-rate-monitor/issues"
+  },
+  "homepage": "https://github.com/qa-gary-parker/playwright-failure-rate-monitor#readme"
+} 
