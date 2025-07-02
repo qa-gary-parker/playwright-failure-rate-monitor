@@ -21,7 +21,7 @@
     "monitoring",
     "environment-resilience"
   ],
-  "author": "Your Name",
+  "author": "Gary Parker",
   "license": "MIT",
   "peerDependencies": {
     "@playwright/test": "^1.40.0"
