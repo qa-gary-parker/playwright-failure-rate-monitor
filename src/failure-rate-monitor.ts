@@ -45,6 +45,9 @@ export class FailureRateMonitor implements Reporter {
 
   private terminationReason?: string;
 
+  // Fixed delay to allow report generation before process termination
+  private readonly REPORT_GENERATION_DELAY_MS = 2000;
+
   constructor(options: FailureRateMonitorOptions = {}) {
     this.options = {
       maxFailureRate: options.maxFailureRate ?? 0.1,
@@ -112,12 +115,17 @@ export class FailureRateMonitor implements Reporter {
       this.shouldTerminate = true;
       this.terminationReason = `Failure rate ${failurePercent}% exceeded threshold ${Math.round(this.options.maxFailureRate * 100)}%`;
       
-      // Signal to Playwright to stop running more tests
-      // This is a graceful way to request termination
-      if (this.config?.globalTimeout) {
-        // Set a very short global timeout to stop execution quickly
-        console.log('⏱️  Setting short timeout to stop test execution gracefully...');
+      // Force termination of the test process with configurable delay for report generation
+      if (this.REPORT_GENERATION_DELAY_MS > 0) {
+        console.log(`⏱️  Allowing ${this.REPORT_GENERATION_DELAY_MS}ms for report generation before terminating...`);
+      } else {
+        console.log('⏹️  Terminating test execution immediately...');
       }
+      
+      setTimeout(() => {
+        console.log('🔴 Terminating test process now.');
+        process.exit(1);
+      }, this.REPORT_GENERATION_DELAY_MS);
     }
   }
 
@@ -133,7 +141,7 @@ export class FailureRateMonitor implements Reporter {
       console.log('📄 Test reports will still be generated from completed tests.');
       
       // Return failure status to indicate the run should be considered failed
-      // This allows other reporters to complete their work before the process exits
+      // The process will exit via the setTimeout in evaluateFailureRate
       return Promise.resolve({ status: 'failed' as const });
     }
 
