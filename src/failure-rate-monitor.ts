@@ -20,6 +20,12 @@ export interface FailureRateMonitorOptions {
   failureRateCheckInterval?: number;
 
   /**
+   * @deprecated Use failureRateCheckInterval instead. Kept for backward compatibility.
+   * How often to check failure rate (in number of completed tests).
+   * Default: 5
+   */
+  evaluationInterval?: number;
+  /**
    * Whether to enable the failure rate monitoring.
    * Default: true
    */
@@ -29,7 +35,7 @@ export interface FailureRateMonitorOptions {
 export class FailureRateMonitor implements Reporter {
   private config?: FullConfig;
 
-  private options: Required<FailureRateMonitorOptions>;
+  private options: Required<Omit<FailureRateMonitorOptions, 'evaluationInterval'>>;
 
   private completedTests = 0;
 
@@ -43,10 +49,10 @@ export class FailureRateMonitor implements Reporter {
     this.options = {
       maxFailureRate: options.maxFailureRate ?? 0.1,
       minTestsBeforeEvaluation: options.minTestsBeforeEvaluation ?? 10,
-      failureRateCheckInterval: options.failureRateCheckInterval ?? 5,
+      // Support both failureRateCheckInterval (preferred) and evaluationInterval (backward compatibility)
+      failureRateCheckInterval: options.failureRateCheckInterval ?? options.evaluationInterval ?? 5,
       enabled: options.enabled ?? true,
-    };
-  }
+    };  }
 
   onBegin(config: FullConfig): void {
     this.config = config;
