@@ -1,6 +1,6 @@
 {
   "name": "playwright-failure-rate-monitor",
-  "version": "1.1.2",
+  "version": "1.0.0",
   "description": "A Playwright reporter that monitors test failure rates in real-time and terminates execution if the failure rate exceeds a configurable threshold.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

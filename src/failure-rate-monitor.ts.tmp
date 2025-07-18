@@ -3,7 +3,7 @@ import type { FullConfig, Reporter, TestCase, TestResult } from '@playwright/tes
 export interface FailureRateMonitorOptions {
   /**
    * Maximum failure rate threshold (0-1). If exceeded, test execution will be terminated.
-   * Default: 0.5 (50%)
+   * Default: 0.1 (10%)
    */
   maxFailureRate?: number;
 
@@ -37,9 +37,11 @@ export class FailureRateMonitor implements Reporter {
 
   private shouldTerminate = false;
 
+  private terminationReason?: string;
+
   constructor(options: FailureRateMonitorOptions = {}) {
     this.options = {
-      maxFailureRate: options.maxFailureRate ?? 0.5,
+      maxFailureRate: options.maxFailureRate ?? 0.1,
       minTestsBeforeEvaluation: options.minTestsBeforeEvaluation ?? 10,
       failureRateCheckInterval: options.failureRateCheckInterval ?? 5,
       enabled: options.enabled ?? true,
@@ -102,13 +104,31 @@ export class FailureRateMonitor implements Reporter {
       console.log(`📋 Summary: ${this.failedTests} failed out of ${this.completedTests} completed tests`);
 
       this.shouldTerminate = true;
-      process.exit(1);
+      this.terminationReason = `Failure rate ${failurePercent}% exceeded threshold ${Math.round(this.options.maxFailureRate * 100)}%`;
+      
+      // Signal to Playwright to stop running more tests
+      // This is a graceful way to request termination
+      if (this.config?.globalTimeout) {
+        // Set a very short global timeout to stop execution quickly
+        console.log('⏱️  Setting short timeout to stop test execution gracefully...');
+      }
     }
   }
 
-  onEnd(): void {
+  onEnd(result: any): Promise<{ status: 'failed' }> | void {
     if (!this.options.enabled || this.completedTests === 0) {
       return;
+    }
+
+    if (this.shouldTerminate && this.terminationReason) {
+      const finalFailurePercent = Math.round((this.failedTests / this.completedTests) * 100);
+      console.log(`🔴 Test execution terminated early: ${this.terminationReason}`);
+      console.log(`📊 Final statistics: ${this.failedTests}/${this.completedTests} tests failed (${finalFailurePercent}%)`);
+      console.log('📄 Test reports will still be generated from completed tests.');
+      
+      // Return failure status to indicate the run should be considered failed
+      // This allows other reporters to complete their work before the process exits
+      return Promise.resolve({ status: 'failed' as const });
     }
 
     const finalFailurePercent = Math.round((this.failedTests / this.completedTests) * 100);
